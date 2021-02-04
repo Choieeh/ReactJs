@@ -4,9 +4,9 @@ import PropTypes from "prop-types";
 import "./Movie.css";
 
 function  Movie({id, year, title, summary, poster, genres}){
-	return 
+	return (
 		<Link to={{
-			pathname:"/movie_detail",
+			pathname:"/movie-detail",
 				state: {
 					year,
 					title,
@@ -26,7 +26,7 @@ function  Movie({id, year, title, summary, poster, genres}){
 
 				</div>
 			</div>
-			</Link>
+			</Link>)
 }
 
 Movie.propTypes={
