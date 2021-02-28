@@ -22,7 +22,6 @@ app.use(session({
 var passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy;
 
-
 app.get('*', function(request, response, next){
   fs.readdir('./data', function(error, filelist){
     request.list = filelist;
