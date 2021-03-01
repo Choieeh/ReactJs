@@ -19,8 +19,49 @@ app.use(session({
   store:new FileStore()
 }))
 
+var authData = {
+  email: 'egoing777@gmail.com',
+  password: '111111',
+  nickname: 'egoing'
+}
+
 var passport = require('passport')
   , LocalStrategy = require('passport-local').Strategy;
+passport.use(new LocalStrategy(
+	{
+		usernameField: 'email',
+		passwordField: 'pwd'
+	},
+  function(username, password, done) {
+	  if(username === authData.email){
+		  if(password === authData.password){
+			  return done(null, authData);
+		  } else{
+			  return done(null, false, { message: 'Incorrect password.' });
+			  //두번째에 false가 아닌값을 주면 true로 사용.
+		  }
+	  } else{
+		  return done(null, false, { message: 'Incorrect username.' });
+	  }
+	  /*
+    User.findOne({ username: username }, function (err, user) {
+      if (err) { return done(err); }
+      if (!user) {
+        return done(null, false, { message: 'Incorrect username.' });
+      }
+      if (!user.validPassword(password)) {
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+      return done(null, user);
+    });*/
+  }
+));
+
+app.post('/auth/login_process',
+	passport.authenticate('local', {
+	successRedirect: '/',
+	failureRedirect: '/auth/login'
+}));
 
 app.get('*', function(request, response, next){
   fs.readdir('./data', function(error, filelist){
