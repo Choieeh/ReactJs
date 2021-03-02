@@ -10,61 +10,78 @@ var FileStore = require('session-file-store')(session)
 
 
 app.use(express.static('public'));
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({
+  extended: false
+}));
 app.use(compression());
 app.use(session({
   secret: 'asadlfkj!@#!@#dfgasdg',
   resave: false,
   saveUninitialized: true,
-  store:new FileStore()
+  store: new FileStore()
 }))
 
 var authData = {
   email: 'egoing777@gmail.com',
   password: '111111',
   nickname: 'egoing'
-}
+};
 
-var passport = require('passport')
-  , LocalStrategy = require('passport-local').Strategy;
+var passport = require('passport'),
+  LocalStrategy = require('passport-local').Strategy;
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+passport.serializeUser(function(user, done) {
+  done(null, user.id);
+	//cookie값으로 user.id가 넘어가게 되는것. serializeUser는 로그인 성공했을때 done 이 실행. 딱한번실행된다.
+});
+
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+	//우리가 필요한 데이터를 호출할때마다 사용한다. 즉 들어갈때마다 사용
+});
+
 passport.use(new LocalStrategy(
-	{
-		usernameField: 'email',
-		passwordField: 'pwd'
-	},
-  function(username, password, done) {
-	  if(username === authData.email){
-		  if(password === authData.password){
-			  return done(null, authData);
-		  } else{
-			  return done(null, false, { message: 'Incorrect password.' });
-			  //두번째에 false가 아닌값을 주면 true로 사용.
-		  }
-	  } else{
-		  return done(null, false, { message: 'Incorrect username.' });
-	  }
-	  /*
-    User.findOne({ username: username }, function (err, user) {
-      if (err) { return done(err); }
-      if (!user) {
-        return done(null, false, { message: 'Incorrect username.' });
+  {
+    usernameField: 'email',
+    passwordField: 'pwd'
+  },
+  function (username, password, done) {
+    console.log('LocalStrategy', username, password);
+    if(username === authData.email){
+      console.log(1);
+      if(password === authData.password){
+        console.log(2);
+        return done(null, authData);
+      } else {
+        console.log(3);
+        return done(null, false, {
+          message: 'Incorrect password.'
+        });
       }
-      if (!user.validPassword(password)) {
-        return done(null, false, { message: 'Incorrect password.' });
-      }
-      return done(null, user);
-    });*/
+    } else {
+      console.log(4);
+      return done(null, false, {
+        message: 'Incorrect username.'
+      });
+    }
   }
 ));
 
 app.post('/auth/login_process',
-	passport.authenticate('local', {
-	successRedirect: '/',
-	failureRedirect: '/auth/login'
-}));
+  passport.authenticate('local', {
+    successRedirect: '/',
+    failureRedirect: '/auth/login'
+  }));
 
-app.get('*', function(request, response, next){
-  fs.readdir('./data', function(error, filelist){
+
+
+app.get('*', function (request, response, next) {
+  fs.readdir('./data', function (error, filelist) {
     request.list = filelist;
     next();
   });
@@ -78,7 +95,7 @@ app.use('/', indexRouter);
 app.use('/topic', topicRouter);
 app.use('/auth', authRouter);
 
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.status(404).send('Sorry cant find that!');
 });
 
@@ -87,6 +104,6 @@ app.use(function (err, req, res, next) {
   res.status(500).send('Something broke!')
 });
 
-app.listen(3000, function() {
+app.listen(3000, function () {
   console.log('Example app listening on port 3000!')
 });
