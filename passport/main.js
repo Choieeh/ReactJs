@@ -39,10 +39,9 @@ passport.serializeUser(function(user, done) {
 });
 
 passport.deserializeUser(function(id, done) {
-  User.findById(id, function(err, user) {
     done(err, user);
-  });
 	//우리가 필요한 데이터를 호출할때마다 사용한다. 즉 들어갈때마다 사용
+	//이때의 done으로 넘겨준 user는 index.js 에 request.user로 넘어감.(약속임)
 });
 
 passport.use(new LocalStrategy(
